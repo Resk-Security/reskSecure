@@ -1,6 +1,13 @@
 # reskSecure
 
+[![PyPI version](https://img.shields.io/pypi/v/resksecure)](https://pypi.org/project/resksecure/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/resksecure)](https://pypi.org/project/resksecure/)
+[![Python versions](https://img.shields.io/pypi/pyversions/resksecure)](https://pypi.org/project/resksecure/)
+[![License](https://img.shields.io/badge/license-RESK-blue)](LICENSE)
+
 **Bitmask-based LLM security firewall.** A Python package that restricts what a language model can generate based on user permissions encoded as a bitmask. It works by intercepting the model's token predictions and blocking or penalizing disallowed phrases before they appear in the output.
+
+Available on [PyPI](https://pypi.org/project/resksecure/).
 
 Unlike prompt-based filters (which can be jailbroken) or post-generation content moderation (which lets forbidden content leak before detection), reskSecure acts at the logits level -- directly inside the model's generation loop. Each token must pass through the security policy before being emitted.
 
@@ -76,6 +83,9 @@ defense-in-depth layer, but the primary protection is at the logits level.
 ```bash
 pip install resksecure
 ```
+
+[![PyPI version](https://img.shields.io/pypi/v/resksecure)](https://pypi.org/project/resksecure/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/resksecure)](https://pypi.org/project/resksecure/)
 
 From source:
 
