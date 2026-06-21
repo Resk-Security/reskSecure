@@ -1,12 +1,29 @@
 [project]
 name = "resksecure"
 version = "0.1.0"
-description = "Bitmask-based LLM security firewall with policy-driven logits filtering"
-authors = [{name = "RESK Team"}]
+description = "Bitmask-based LLM security firewall with policy-driven logits filtering using GPU-accelerated Aho-Corasick pattern matching"
+authors = [{name = "RESK Security"}]
 readme = "README.md"
 requires-python = ">=3.13"
-license = {text = "APACHE 2"}
-keywords = ["llm", "safety", "security", "bitmask", "logits", "transformers", "firewall"]
+license = {text = "RESK Software License"}
+
+keywords = [
+    "llm", "safety", "security", "bitmask", "logits",
+    "transformers", "firewall", "filtering", "aho-corasick",
+    "gpu", "policy", "permissions", "dlp",
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 
 dependencies = [
     "resklogits>=0.1.0",
@@ -14,6 +31,11 @@ dependencies = [
     "torch>=2.0.0",
     "transformers>=4.35.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Resk-Security/reskSecure"
+Repository = "https://github.com/Resk-Security/reskSecure"
+Documentation = "https://github.com/Resk-Security/reskSecure"
 
 [project.optional-dependencies]
 dev = [

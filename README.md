@@ -1,69 +1,100 @@
-# reskSecure 🔒
+# reskSecure
 
-**Bitmask-based LLM security firewall.**
+**Bitmask-based LLM security firewall.** A Python package that restricts what a language model can generate based on user permissions encoded as a bitmask. It works by intercepting the model's token predictions and blocking or penalizing disallowed phrases before they appear in the output.
 
-A policy-driven `LogitsProcessor` that restricts LLM output based on capability bitmasks. Uses [resklogits](https://github.com/anomalyco/resk-lib) (`VectorizedAhoCorasick`) for GPU-accelerated pattern matching.
+Unlike prompt-based filters (which can be jailbroken) or post-generation content moderation (which lets forbidden content leak before detection), reskSecure acts at the logits level -- directly inside the model's generation loop. Each token must pass through the security policy before being emitted.
 
-## Architecture
+---
+
+## How it works
 
 ```
-User request with bitmask ──▶ BitmaskLogitsProcessor
-                                      │
-                    ┌─────────────────┼─────────────────┐
-                    ▼                 ▼                  ▼
-             PolicyLoader       TrieFactory         ToolGuard
-                    │                 │                  │
-                    ▼                 ▼                  ▼
-             YAML config      VectorizedAhoCorasick   Bitmask check
-                                  (resklogits)
+User request with bitmask (e.g. 7)
+    |
+    v
+BitmaskLogitsProcessor intercepts each token prediction
+    |
+    v
+For every candidate token, the Aho-Corasick automaton (from resklogits)
+checks if selecting it would start or complete a banned phrase
+    |
+    v
+Hard-mode phrases: the token's logit is set to -inf (impossible to generate)
+Bias-mode phrases: the token's logit is reduced by a configurable penalty
+    |
+    v
+On complete match: EOS token is forced, generation stops immediately
+    |
+    v
+Output response or tool call
+    |
+    v
+ToolGuard verifies the user's bitmask permits the requested action
 ```
 
-## Quick Start
+---
 
-```python
-from resksecure import BitmaskLogitsProcessor, load_policy, verify_tool_action
+## Why not just prompt engineering?
 
-# 1. Load policy
-policy_set = load_policy("config/policy.yaml")
+- Prompt injections can bypass instruction-based filters
+- Post-generation regex or classifier scans catch violations after they appear, but the forbidden content has already been emitted
+- Logits-level filtering blocks tokens before they are sampled -- the model never "sees" the banned sequence as a completion candidate
 
-# 2. Create processor
-processor = BitmaskLogitsProcessor(
-    mask=7,                      # bitmask from JWT
-    model_name="mistralai/Mistral-7B-v0.1",
-    tokenizer=tokenizer,
-    policy_set=policy_set,
-    device="cuda",
-)
-
-# 3. Generate
-outputs = model.generate(**inputs, logits_processor=[processor])
-
-# 4. Verify tool calls
-if has_tool_call(response):
-    if not verify_tool_action("send_email", user_mask=7, policy_set=policy_set):
-        raise PermissionError("Action not allowed")
-```
+---
 
 ## Features
 
-- **Dual severity**: `hard` mode (bans tokens completely) and `bias` mode (reduces logits)
-- **Strict mode**: forces EOS at the first sign of a banned prefix
-- **Hot-reload**: `PolicyWatcher` detects file changes and invalidates the cache
-- **Thread-safe cache**: TTL-based, per `(mask, model_name)` entries
-- **Tool guard**: post-generation bitmask verification for tool calls
-- **GPU-accelerated**: uses `resklogits`' `VectorizedAhoCorasick` for fast pattern matching
+- **Two severity modes**: `hard` blocks tokens completely (-inf logit), `bias` reduces probability by a configurable penalty
+- **Strict mode**: forces end-of-sequence as soon as the generated prefix matches the start of a banned phrase, even before the full phrase is formed
+- **GPU-accelerated pattern matching**: uses VectorizedAhoCorasick from the resklogits package for fast token scanning
+- **Policy system**: YAML configuration associates capability bitmasks with phrase rules and tool permissions
+- **Hot-reload**: PolicyWatcher detects file changes and rebuilds the automaton without restarting the server
+- **Thread-safe cache**: automata are cached by (mask, model_name) with configurable TTL
+- **Tool guard**: post-generation bitmask check for tool call execution
+- **No JWT handling**: the package receives a raw integer bitmask; authentication and JWT decoding are handled by the calling application
 
-## Policy Format
+---
+
+## Requirements
+
+- Python >= 3.13
+- PyTorch >= 2.0.0
+- transformers >= 4.35.0
+- resklogits >= 0.1.0
+
+---
+
+## Installation
+
+```bash
+pip install resksecure
+```
+
+From source:
+
+```bash
+git clone https://github.com/Resk-Security/reskSecure.git
+cd reskSecure
+pip install -e .
+```
+
+---
+
+## Quick start
+
+Define a policy file (`policy.yaml`):
 
 ```yaml
-version: "0.1.0"
+version: "1.0"
 policies:
-  - mask: 7            # capabilities bitmask (from JWT)
+  - mask: 7
     name: contributor
     strict: false
     default: true
     rules:
       - phrase: "DROP TABLE"
+        mode: hard
+      - phrase: "DELETE FROM"
         mode: hard
       - phrase: "salaries"
         mode: bias
@@ -73,11 +104,77 @@ policies:
         required_bit: 0
       send_email:
         required_bit: 1
+      read_sql:
+        required_bit: 2
 ```
 
-## Dependencies
+Use it in your generation pipeline:
 
-- `resklogits >= 0.1.0`
-- `torch >= 2.0.0`
-- `transformers >= 4.35.0`
-- `pyyaml >= 6.0`
+```python
+from resksecure import BitmaskLogitsProcessor, load_policy, verify_tool_action
+
+policy_set = load_policy("policy.yaml")
+
+processor = BitmaskLogitsProcessor(
+    mask=7,
+    model_name="mistralai/Mistral-7B-v0.1",
+    tokenizer=tokenizer,
+    policy_set=policy_set,
+    device="cuda",
+)
+
+outputs = model.generate(**inputs, logits_processor=[processor])
+
+# Optional: verify tool calls against the bitmask
+if has_tool_call(response):
+    if not verify_tool_action("send_email", user_mask=7, policy_set=policy_set):
+        raise PermissionError("Action not authorized")
+```
+
+---
+
+## Policy reference
+
+| Field       | Type    | Description                                              |
+|-------------|---------|----------------------------------------------------------|
+| `mask`      | int     | Capability bitmask that identifies this policy           |
+| `name`      | string  | Human-readable policy name                               |
+| `strict`    | bool    | If true, stop generation at the first banned prefix      |
+| `default`   | bool    | If true, this policy is used when no exact mask matches  |
+| `rules`     | list    | List of phrase rules (see below)                         |
+| `tools`     | dict    | Map of tool names to required bit positions              |
+
+Phrase rule fields:
+
+| Field     | Type   | Description                                                |
+|-----------|--------|------------------------------------------------------------|
+| `phrase`  | string | Text pattern to ban or penalize                            |
+| `mode`    | string | Either `hard` (block completely) or `bias` (reduce logits) |
+| `penalty` | float  | Logit penalty for bias mode (e.g. -5.0)                   |
+
+---
+
+## Package structure
+
+```
+reskSecure/
+  src/resksecure/
+    __init__.py              Public exports, version
+    policy_loader.py         YAML parsing, Policy/PolicySet models
+    trie_factory.py          Builds VectorizedAhoCorasick from a Policy
+    bitmask_processor.py     BitmaskLogitsProcessor (LogitsProcessor subclass)
+    tool_guard.py            Post-generation tool action verification
+    cache.py                 Thread-safe TTL cache for automata
+    policy_watcher.py        Hot-reload daemon that watches YAML mtime
+    config/example_policy.yaml
+  tests/
+  examples/
+```
+
+---
+
+## License
+
+This software is licensed under the RESK Software License. Commercial use requires a separate paid license. See the [LICENSE](LICENSE) file for details.
+
+For commercial licensing inquiries, contact: resk-security@proton.me

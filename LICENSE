@@ -1,0 +1,105 @@
+RESK SOFTWARE LICENSE
+Version 1.0, June 2026
+
+Copyright (c) 2026 RESK Security
+
+TERMS AND CONDITIONS
+
+1. Definitions
+
+"Software" means the source code, documentation, and any accompanying
+materials in this repository.
+
+"Licensor" means RESK Security.
+
+"Licensee" means any individual or entity that accesses or uses the Software.
+
+"Commercial Use" means any use of the Software where the primary purpose
+is commercial advantage or monetary compensation, including but not limited
+to: integrating the Software into a commercial product, offering the Software
+as part of a SaaS service, using the Software for internal business operations
+that generate revenue, or distributing the Software in exchange for any form
+of payment.
+
+"Royalty" means the recurring fee payable to Licensor for any Commercial Use
+of the Software, as defined in a separate commercial agreement.
+
+2. Grant of License
+
+Subject to the terms and conditions of this License, Licensor grants Licensee
+a non-exclusive, non-transferable, non-sublicensable, limited license to:
+
+(a) View and study the Software source code.
+(b) Use the Software for non-commercial, personal, educational, or
+    evaluation purposes only.
+(c) Modify the Software for personal, non-commercial use only.
+
+3. Prohibited Uses
+
+Without the prior written consent of Licensor, Licensee may NOT:
+
+(a) Use the Software for any Commercial Use.
+(b) Distribute, sublicense, sell, lease, rent, or transfer the Software
+    or any derivative thereof to any third party.
+(c) Incorporate the Software or any portion thereof into any product or
+    service offered to third parties.
+(d) Remove or alter any copyright, trademark, or proprietary notice
+    contained in the Software.
+(e) Use the Software in any manner that competes with Licensor's business.
+(f) Create derivative works based on the Software for distribution or
+    Commercial Use.
+(g) Use the Software in any environment that processes sensitive personal
+    data without prior written authorization from Licensor.
+
+4. Commercial License and Royalties
+
+Any Commercial Use of the Software requires a separate commercial license
+agreement signed by both parties. Such agreement shall specify:
+
+(a) The scope of permitted Commercial Use.
+(b) Royalty fees, which shall be calculated as a percentage of revenue or
+    a fixed fee per deployment, as agreed upon in writing.
+(c) Duration and renewal terms.
+
+Contact: resk-security@proton.me for commercial licensing inquiries.
+
+5. Intellectual Property
+
+All right, title, and interest in and to the Software, including all
+intellectual property rights therein, remain the exclusive property of
+Licensor. This License does not transfer any ownership rights to Licensee.
+
+6. No Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+7. Limitation of Liability
+
+In no event shall Licensor be liable for any indirect, incidental, special,
+consequential, or punitive damages, including but not limited to loss of
+profits, data, or use, arising out of or in connection with the Software,
+whether based on warranty, contract, tort, or any other legal theory, even
+if Licensor has been advised of the possibility of such damages.
+
+8. Termination
+
+This License terminates automatically if Licensee fails to comply with any
+of its terms. Upon termination, Licensee must immediately cease all use of
+the Software and destroy all copies. Licensor reserves the right to pursue
+legal remedies for any unauthorized use.
+
+9. Governing Law
+
+This License shall be governed by and construed in accordance with the laws
+of France, without regard to its conflict of laws principles.
+
+10. Entire Agreement
+
+This License constitutes the entire agreement between the parties concerning
+the subject matter hereof and supersedes all prior agreements and
+understandings.
