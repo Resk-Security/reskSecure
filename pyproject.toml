@@ -1,0 +1,35 @@
+[project]
+name = "resksecure"
+version = "0.1.0"
+description = "Bitmask-based LLM security firewall with policy-driven logits filtering"
+authors = [{name = "RESK Team"}]
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "APACHE 2"}
+keywords = ["llm", "safety", "security", "bitmask", "logits", "transformers", "firewall"]
+
+dependencies = [
+    "resklogits>=0.1.0",
+    "pyyaml>=6.0",
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/resksecure"]
+include = ["/src/resksecure/**/*.py", "/src/resksecure/**/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

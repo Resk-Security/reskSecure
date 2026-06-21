@@ -1,0 +1,83 @@
+version: "0.1.0"
+
+policies:
+  - mask: 7
+    name: "contributor"
+    strict: false
+    default: true
+    rules:
+      - phrase: "DROP TABLE"
+        mode: hard
+      - phrase: "DELETE FROM"
+        mode: hard
+      - phrase: "ALTER TABLE"
+        mode: hard
+      - phrase: "TRUNCATE"
+        mode: hard
+      - phrase: "EXEC"
+        mode: hard
+      - phrase: "xp_cmdshell"
+        mode: hard
+      - phrase: "INTO OUTFILE"
+        mode: hard
+      - phrase: "GRANT ALL"
+        mode: hard
+      - phrase: "salaries"
+        mode: bias
+        penalty: -5.0
+      - phrase: "passwords"
+        mode: bias
+        penalty: -5.0
+      - phrase: "credit_cards"
+        mode: bias
+        penalty: -8.0
+      - phrase: "ssn"
+        mode: bias
+        penalty: -8.0
+    tools:
+      read_email:
+        required_bit: 0
+      send_email:
+        required_bit: 1
+      read_sql:
+        required_bit: 2
+
+  - mask: 15
+    name: "admin"
+    strict: false
+    rules:
+      - phrase: "xp_cmdshell"
+        mode: hard
+    tools:
+      read_email:
+        required_bit: 0
+      send_email:
+        required_bit: 1
+      read_sql:
+        required_bit: 2
+      write_sql:
+        required_bit: 3
+
+  - mask: 23
+    name: "auditor"
+    strict: true
+    rules:
+      - phrase: "DROP TABLE"
+        mode: hard
+      - phrase: "DELETE"
+        mode: hard
+      - phrase: "ALTER"
+        mode: hard
+      - phrase: "salaries"
+        mode: bias
+        penalty: -10.0
+      - phrase: "ssn"
+        mode: bias
+        penalty: -10.0
+    tools:
+      read_email:
+        required_bit: 0
+      read_sql:
+        required_bit: 2
+      create_jira:
+        required_bit: 4
