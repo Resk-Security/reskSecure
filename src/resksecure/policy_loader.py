@@ -16,6 +16,7 @@ class PhraseRule:
 class ToolRule:
     name: str
     required_bit: int
+    trigger_phrases: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -71,6 +72,7 @@ def load_policy(path: str | Path) -> PolicySet:
             tools[tool_name] = ToolRule(
                 name=tool_name,
                 required_bit=config["required_bit"],
+                trigger_phrases=config.get("trigger_phrases", []),
             )
 
         policy = Policy(

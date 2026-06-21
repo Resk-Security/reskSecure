@@ -40,6 +40,7 @@ jobs:
         if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish_to_pypi == 'true') }}
         with:
           packages-dir: dist/
+          password: ${{ secrets.PYPI_TOKEN }}
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -47,3 +48,4 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           packages-dir: dist/
+          password: ${{ secrets.PYPI_TOKEN }}

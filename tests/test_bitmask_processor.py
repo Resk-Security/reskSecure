@@ -36,7 +36,13 @@ class FakeTokenizer:
         return {"input_ids": input_ids}
 
     def encode(self, text, add_special_tokens=False, **kwargs):
-        return {"input_ids": [self._tokenize(text)]}
+        return self._tokenize(text)
+
+    def batch_encode_plus(self, texts, add_special_tokens=False, return_attention_mask=False, padding=False, truncation=False):
+        if isinstance(texts, str):
+            texts = [texts]
+        input_ids = [self._tokenize(t) for t in texts]
+        return {"input_ids": input_ids}
 
     def decode(self, ids, skip_special_tokens=True):
         return "".join(chr(i % 128) for i in ids if 32 <= (i % 128) < 127)

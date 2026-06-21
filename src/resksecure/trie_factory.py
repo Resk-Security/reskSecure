@@ -4,7 +4,21 @@ from typing import Dict, List, Optional, Tuple
 from resklogits import VectorizedAhoCorasick
 
 from .cache import trie_cache
-from .policy_loader import Policy, PolicySet
+from .policy_loader import Policy, PolicySet, PhraseRule
+
+
+def _expand_phrases(phrases: List[str]) -> List[str]:
+    """Generate variants of each phrase (space-prefixed, capitalized)."""
+    expanded: List[str] = []
+    for s in phrases:
+        s = s.strip()
+        expanded.append(s)
+        if not s.startswith(" "):
+            expanded.append(" " + s)
+        capitalized = s.capitalize()
+        if capitalized != s:
+            expanded.append(capitalized)
+    return expanded
 
 
 def build_ac_from_policy(
@@ -30,15 +44,7 @@ def build_ac_from_policy(
     pattern_meta: List[Tuple[str, float]] = []
 
     for rule in policy.rules:
-        s = rule.phrase.strip()
-        variants = [s]
-        if not s.startswith(" "):
-            variants.append(" " + s)
-        capitalized = s.capitalize()
-        if capitalized != s:
-            variants.append(capitalized)
-
-        for variant in variants:
+        for variant in _expand_phrases([rule.phrase]):
             all_phrases.append(variant)
             pattern_meta.append((rule.mode, rule.penalty))
 
@@ -66,6 +72,10 @@ def get_or_build_ac(
 ):
     """Get cached automaton or build it from the policy.
 
+    Also derives tool trigger phrases that should be blocked for this mask.
+    If the user's mask does not have the required bit for a tool, that
+    tool's trigger phrases are added as hard-mode blocked phrases.
+
     Returns:
         (hard_ac, bias_ac, hard_meta, bias_meta, policy)
         - hard_ac: VectorizedAhoCorasick or None for hard-mode phrases
@@ -80,27 +90,37 @@ def get_or_build_ac(
         return cached
 
     policy = policy_set.get_policy_for_mask(mask)
-    if policy is None or not policy.rules:
-        result = (None, None, {}, {}, policy)
-        trie_cache.set(key, result)
-        return result
+    if policy is None:
+        return (None, None, {}, {}, policy)
 
+    # Collect explicit rules from the policy
     hard_phrases = [r.phrase for r in policy.rules if r.mode == "hard"]
     bias_phrases = [r.phrase for r in policy.rules if r.mode == "bias"]
+
+    # Derive tool trigger phrases for tools the user does NOT have access to.
+    # These are added as hard-mode phrases so the model can never generate
+    # a disallowed tool call at the token level.
+    if policy.tools:
+        for tool_name, tool_rule in policy.tools.items():
+            has_bit = (mask & (1 << tool_rule.required_bit)) != 0
+            if not has_bit and tool_rule.trigger_phrases:
+                hard_phrases.extend(tool_rule.trigger_phrases)
 
     hard_ac, bias_ac = None, None
     hard_meta, bias_meta = {}, {}
 
     if hard_phrases:
+        hard_rules = [PhraseRule(phrase=p, mode="hard") for p in hard_phrases]
         hard_ac, hard_meta, _ = build_ac_from_policy(
-            Policy(mask=policy.mask, rules=[r for r in policy.rules if r.mode == "hard"]),
+            Policy(mask=policy.mask, rules=hard_rules),
             tokenizer,
             device,
         )
 
     if bias_phrases:
+        bias_rules = [PhraseRule(phrase=p, mode="bias", penalty=-5.0) for p in bias_phrases]
         bias_ac, bias_meta, _ = build_ac_from_policy(
-            Policy(mask=policy.mask, rules=[r for r in policy.rules if r.mode == "bias"]),
+            Policy(mask=policy.mask, rules=bias_rules),
             tokenizer,
             device,
         )

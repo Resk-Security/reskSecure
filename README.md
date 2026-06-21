@@ -27,10 +27,17 @@ On complete match: EOS token is forced, generation stops immediately
     |
     v
 Output response or tool call
-    |
-    v
-ToolGuard verifies the user's bitmask permits the requested action
 ```
+
+Tool calls are also blocked at the token level. If the user's bitmask does not
+contain the required bit for a tool, that tool's trigger phrases (like
+`"send_email("` or `"create_ticket("`) are automatically added to the
+hard-mode blocked list. The model can never generate the first token of
+a disallowed tool call, regardless of prompt engineering or jailbreak
+attempts.
+
+A post-generation check (`verify_tool_action`) is also available as a
+defense-in-depth layer, but the primary protection is at the logits level.
 
 ---
 
@@ -135,6 +142,8 @@ if has_tool_call(response):
 
 ## Policy reference
 
+Policy-level fields:
+
 | Field       | Type    | Description                                              |
 |-------------|---------|----------------------------------------------------------|
 | `mask`      | int     | Capability bitmask that identifies this policy           |
@@ -142,7 +151,7 @@ if has_tool_call(response):
 | `strict`    | bool    | If true, stop generation at the first banned prefix      |
 | `default`   | bool    | If true, this policy is used when no exact mask matches  |
 | `rules`     | list    | List of phrase rules (see below)                         |
-| `tools`     | dict    | Map of tool names to required bit positions              |
+| `tools`     | dict    | Map of tool names to tool rule objects (see below)       |
 
 Phrase rule fields:
 
@@ -151,6 +160,13 @@ Phrase rule fields:
 | `phrase`  | string | Text pattern to ban or penalize                            |
 | `mode`    | string | Either `hard` (block completely) or `bias` (reduce logits) |
 | `penalty` | float  | Logit penalty for bias mode (e.g. -5.0)                   |
+
+Tool rule fields:
+
+| Field              | Type     | Description                                                    |
+|--------------------|----------|----------------------------------------------------------------|
+| `required_bit`     | int      | Bit position that must be set in the user mask to use this tool |
+| `trigger_phrases`  | string[] | Phrases that start this tool call (blocked if bit not set)      |
 
 ---
 
