@@ -193,4 +193,4 @@ reskSecure/
 
 This software is licensed under the RESK Software License. Commercial use requires a separate paid license. See the [LICENSE](LICENSE) file for details.
 
-For commercial licensing inquiries, contact: resk-security@proton.me
+For commercial licensing inquiries, contact: contact@resk.fr
