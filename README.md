@@ -9,6 +9,8 @@
 
 🔗 [resk.fr/projects/resksecure](https://resk.fr/projects/resksecure.html) — part of [RESK Security](https://resk.fr)
 
+📚 Guides: [Capability Bitmasks: Real RBAC for LLM Applications](https://resk.fr/blog/llm-security-rbac-bitmask.html) · [Data Protection in AI](https://resk.fr/pages/security/data-protection-ai.html)
+
 ## Installation
 
 ```bash
