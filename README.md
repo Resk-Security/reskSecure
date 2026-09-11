@@ -7,6 +7,8 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/resksecure.svg)](https://pypi.org/project/resksecure/)
 [![License](https://img.shields.io/badge/license-RESK-blue)](LICENSE)
 
+🔗 [resk.fr/projects/resksecure](https://resk.fr/projects/resksecure.html) — part of [RESK Security](https://resk.fr)
+
 ## Installation
 
 ```bash
