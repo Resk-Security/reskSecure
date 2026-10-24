@@ -1,8 +1,7 @@
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 from resksecure.policy_loader import load_policy
-
 
 SAMPLE_YAML = """
 version: "1.0"

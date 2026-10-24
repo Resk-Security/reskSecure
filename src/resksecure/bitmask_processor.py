@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Dict, Optional
 
 import torch
@@ -55,9 +56,7 @@ class BitmaskLogitsProcessor(LogitsProcessor):
         self.hard_ac: Optional[VectorizedAhoCorasick] = hard_ac
         self.hard_modes: Dict[int, str] = hard_meta
         self.bias_ac: Optional[VectorizedAhoCorasick] = bias_ac
-        self.bias_penalties: Dict[int, float] = {
-            pid: penalty for pid, penalty in bias_meta.items()
-        }
+        self.bias_penalties: Dict[int, float] = dict(bias_meta)
         self.policy: Optional[Policy] = policy
         self.strict = policy.strict if policy else False
 

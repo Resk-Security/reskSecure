@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from typing import Dict, List, Optional, Tuple
 
 from resklogits import VectorizedAhoCorasick
 
 from .cache import trie_cache
-from .policy_loader import Policy, PolicySet, PhraseRule
+from .policy_loader import PhraseRule, Policy, PolicySet
 
 
 def _expand_phrases(phrases: List[str]) -> List[str]:
@@ -101,7 +102,7 @@ def get_or_build_ac(
     # These are added as hard-mode phrases so the model can never generate
     # a disallowed tool call at the token level.
     if policy.tools:
-        for tool_name, tool_rule in policy.tools.items():
+        for _tool_name, tool_rule in policy.tools.items():
             has_bit = (mask & (1 << tool_rule.required_bit)) != 0
             if not has_bit and tool_rule.trigger_phrases:
                 hard_phrases.extend(tool_rule.trigger_phrases)

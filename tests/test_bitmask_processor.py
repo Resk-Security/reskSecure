@@ -1,10 +1,10 @@
-import torch
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
-from resksecure.policy_loader import load_policy
+import torch
+
 from resksecure.bitmask_processor import BitmaskLogitsProcessor
-
+from resksecure.policy_loader import load_policy
 
 SAMPLE_YAML = """
 version: "1.0"
@@ -69,7 +69,7 @@ class FakeAC:
         self._build_trie()
 
     def _build_trie(self):
-        for idx, pattern in enumerate(self.patterns):
+        for _idx, pattern in enumerate(self.patterns):
             node = 0
             for t in pattern:
                 if node not in self.trie:
