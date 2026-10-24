@@ -38,6 +38,4 @@ jobs:
         run: python -c "from resksecure import BitmaskLogitsProcessor, load_policy, verify_tool_action; print('All imports OK')"
 
       - name: Dependency audit
-        run: |
-          pip install pip-audit
-          pip-audit --skip-editable
+        run: uvx pip-audit --path "$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')" --skip-editable
