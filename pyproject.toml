@@ -29,6 +29,7 @@ dependencies = [
     "resklogits>=0.1.0",
     "pyyaml>=6.0",
     "torch>=2.13.0",
+    "filelock>=4.2.1",
     "transformers>=4.35.0",
 ]
 
