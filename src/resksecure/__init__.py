@@ -38,7 +38,7 @@ from .policy_watcher import PolicyWatcher
 from .tool_guard import get_allowed_tools, verify_tool_action
 from .trie_factory import build_ac_from_policy, get_or_build_ac
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "BitmaskLogitsProcessor",

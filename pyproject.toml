@@ -1,6 +1,6 @@
 [project]
 name = "resksecure"
-version = "0.1.0"
+version = "0.1.1"
 description = "Bitmask-based LLM security firewall with policy-driven logits filtering using GPU-accelerated Aho-Corasick pattern matching"
 authors = [{name = "RESK Security"}]
 readme = "README.md"
