@@ -111,18 +111,18 @@ class BitmaskLogitsProcessor(LogitsProcessor):
         return scores
 
     def _get_bias_penalty(self) -> float:
-        """Get the bias penalty for currently matched patterns."""
+        """Most negative penalty among the patterns matched at the current state."""
         if self.bias_ac is None:
             return 0.0
         if not self.bias_ac.has_match(self._bias_state):
             return 0.0
         matched = self.bias_ac.get_matched_patterns(self._bias_state)
-        penalty = 0.0
-        for pid in matched:
-            p = self.bias_penalties.get(pid, 0.0)
-            if p < penalty:
-                penalty = p
-        return penalty
+        penalties = [
+            float(value)
+            for pid in matched
+            if isinstance(value := self.bias_penalties.get(pid), (int, float))
+        ]
+        return min(penalties, default=0.0)
 
     def _is_on_path_to_hard_match(self) -> bool:
         """Check if current AC state could reach a match in one step."""

@@ -145,3 +145,50 @@ def test_processor_reset():
     processor.reset()
     assert processor._hard_state == 0
     assert processor._bias_state == 0
+
+
+def test_bias_penalties_keep_yaml_values():
+    """The YAML penalty must reach the processor as a float, not the mode string."""
+    ps = _load_test_policy()
+    processor = BitmaskLogitsProcessor(7, "test_model", FakeTokenizer(), ps, device="cpu")
+
+    assert processor.bias_penalties, "bias rules should produce penalties"
+    assert all(isinstance(value, float) for value in processor.bias_penalties.values())
+    assert -5.0 in processor.bias_penalties.values()
+
+
+def test_bias_mode_applies_penalty_without_crashing():
+    ps = _load_test_policy()
+    tok = FakeTokenizer()
+    processor = BitmaskLogitsProcessor(7, "test_model", tok, ps, device="cpu")
+
+    scores = None
+    for char in "hello":  # "hello" is a bias-mode phrase in the sample policy
+        token = tok.encode(char, add_special_tokens=False)[0]
+        scores = processor(torch.tensor([[token]]), torch.zeros(1, tok.vocab_size))
+
+    assert scores is not None
+    h_token = tok.encode("h", add_special_tokens=False)[0]
+    # -5.0 from the bias rule (the hard "DROP" rule bans other characters).
+    assert scores[0, h_token].item() == -5.0
+
+
+def test_bias_mode_honours_custom_penalty():
+    yaml = SAMPLE_YAML.replace("penalty: -5.0", "penalty: -8.0")
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        f.write(yaml)
+        tmp = f.name
+    try:
+        ps = load_policy(tmp)
+    finally:
+        Path(tmp).unlink()
+
+    tok = FakeTokenizer()
+    processor = BitmaskLogitsProcessor(7, "custom", tok, ps, device="cpu")
+    scores = None
+    for char in "hello":
+        token = tok.encode(char, add_special_tokens=False)[0]
+        scores = processor(torch.tensor([[token]]), torch.zeros(1, tok.vocab_size))
+
+    h_token = tok.encode("h", add_special_tokens=False)[0]
+    assert scores[0, h_token].item() == -8.0

@@ -94,9 +94,11 @@ def get_or_build_ac(
     if policy is None:
         return (None, None, {}, {}, policy)
 
-    # Collect explicit rules from the policy
-    hard_phrases = [r.phrase for r in policy.rules if r.mode == "hard"]
-    bias_phrases = [r.phrase for r in policy.rules if r.mode == "bias"]
+    # Collect explicit rules from the policy, keeping the per-rule penalties
+    # declared in the YAML. Hard rules ignore the penalty but keeping the
+    # original objects makes the two lists symmetrical.
+    hard_rules: List[PhraseRule] = [r for r in policy.rules if r.mode == "hard"]
+    bias_rules: List[PhraseRule] = [r for r in policy.rules if r.mode == "bias"]
 
     # Derive tool trigger phrases for tools the user does NOT have access to.
     # These are added as hard-mode phrases so the model can never generate
@@ -105,22 +107,26 @@ def get_or_build_ac(
         for _tool_name, tool_rule in policy.tools.items():
             has_bit = (mask & (1 << tool_rule.required_bit)) != 0
             if not has_bit and tool_rule.trigger_phrases:
-                hard_phrases.extend(tool_rule.trigger_phrases)
+                hard_rules.extend(
+                    PhraseRule(phrase=phrase, mode="hard")
+                    for phrase in tool_rule.trigger_phrases
+                )
 
     hard_ac, bias_ac = None, None
-    hard_meta, bias_meta = {}, {}
+    hard_meta: Dict[int, str] = {}
+    bias_meta: Dict[int, float] = {}
 
-    if hard_phrases:
-        hard_rules = [PhraseRule(phrase=p, mode="hard") for p in hard_phrases]
+    if hard_rules:
         hard_ac, hard_meta, _ = build_ac_from_policy(
             Policy(mask=policy.mask, rules=hard_rules),
             tokenizer,
             device,
         )
 
-    if bias_phrases:
-        bias_rules = [PhraseRule(phrase=p, mode="bias", penalty=-5.0) for p in bias_phrases]
-        bias_ac, bias_meta, _ = build_ac_from_policy(
+    if bias_rules:
+        # build_ac_from_policy returns (automaton, modes, penalties): the third
+        # value is what the processor needs, the second is informational.
+        bias_ac, _bias_modes, bias_meta = build_ac_from_policy(
             Policy(mask=policy.mask, rules=bias_rules),
             tokenizer,
             device,

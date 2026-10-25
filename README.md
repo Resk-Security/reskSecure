@@ -7,6 +7,8 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/resksecure.svg)](https://pypi.org/project/resksecure/)
 [![License](https://img.shields.io/badge/license-RESK-blue)](LICENSE)
 
+[![Documentation](https://img.shields.io/badge/docs-resk.fr%2Fdocs%2Fresksecure-orange)](https://resk.fr/docs/resksecure/)
+
 🔗 [resk.fr/projects/resksecure](https://resk.fr/projects/resksecure.html) — part of [RESK Security](https://resk.fr)
 
 📚 Guides: [Capability Bitmasks: Real RBAC for LLM Applications](https://resk.fr/blog/llm-security-rbac-bitmask.html) · [Data Protection in AI](https://resk.fr/pages/security/data-protection-ai.html)
@@ -65,7 +67,7 @@ Prompt filters are jailbreakable; post-generation moderation detects violations 
 | Forbidden content ever emitted | No | Yes | **Yes — first** | Yes |
 | Per-user permissions | ✅ capability bitmask | ⚠️ prompt-level | ❌ global policy | ✅ but not generation |
 | Tool-call gating at token level | ✅ trigger phrases blocked per bit | ❌ | ❌ | ⚠️ execution-time only |
-| Policy hot-reload, no restart | ✅ `PolicyWatcher` | — | — | ✅ |
+| Policy reload without restart | ✅ `PolicyWatcher` (rebuild the processor to apply) | — | — | ✅ |
 | What it protects | LLM output itself | LLM input | Nothing retroactively | App resources |
 
 ## Documentation
